@@ -19,18 +19,16 @@ class Table:
                     return False
         return True
 
-    def threeinarow(self):
+    def threeinarow(self, player):
         t = self.data
-        return (
-            (t[0][0] == t[0][1] == t[0][2]) and (not t[0][0] == 0) or
-            (t[1][0] == t[1][1] == t[1][2]) and (not t[1][0] == 0) or
-            (t[2][0] == t[2][1] == t[2][2]) and (not t[2][0] == 0) or
-            (t[0][0] == t[1][0] == t[2][0]) and (not t[0][0] == 0) or
-            (t[0][1] == t[1][1] == t[2][1]) and (not t[0][1] == 0) or
-            (t[0][2] == t[1][2] == t[2][2]) and (not t[0][2] == 0) or
-            (t[0][0] == t[1][1] == t[2][2]) and (not t[0][0] == 0) or
-            (t[2][0] == t[1][1] == t[0][2]) and (not t[2][0] == 0)
-        )
+        return ((t[0][0] == t[0][1] == t[0][2] == player) or
+                (t[1][0] == t[1][1] == t[1][2] == player) or
+                (t[2][0] == t[2][1] == t[2][2] == player) or
+                (t[0][0] == t[1][0] == t[2][0] == player) or
+                (t[0][1] == t[1][1] == t[2][1] == player) or
+                (t[0][2] == t[1][2] == t[2][2] == player) or
+                (t[0][0] == t[1][1] == t[2][2] == player) or
+                (t[2][0] == t[1][1] == t[0][2] == player))
 
     def __str__(self):
         return "\n".join([" ".join([str(v) for v in r]) for r in self.data])
@@ -40,29 +38,41 @@ class Game:
 
     def __init__(self):
         self.table = Table()
-        self.value = 1
+        self.player = 1
+        self.done = False
+        self.winner = 0
 
     def start(self):
         while not self.is_done():
-            print(self.table)
             valid = False
             while not valid:
-                x, y = self.prompt()
-                valid = self.step(x, y)
+                try:
+                    print("PLAYER %s'S TURN" % self.player)
+                    print(self.table)
+                    x, y = self.prompt()
+                    valid = self.step(x, y)
+                    self.player = [2, 1][self.player - 1]
+                except ValueError:
+                    print("Input should be a number")
+        if not self.winner == 0:
+            print("WINNER IS PLAYER %d" % self.winner)
+        else:
+            print("GAME WAS A TIE")
         print(self.table)
-        print("DONE!")
 
     def step(self, x, y):
         try:
-            self.table.set(x, y, self.value)
-            self.value = [2, 1][self.value - 1]
+            self.table.set(x, y, self.player)
+            self.done = self.table.threeinarow(self.player)
+            if self.done:
+                self.winner = self.player
             return True
         except IndexError as e:
             print(e.args[0])
             return False
 
     def prompt(self):
-        if self.value == 1:
+        if self.player == 1:
             return self.prompt_user()
         else:
             return self.prompt_ai()
@@ -76,4 +86,4 @@ class Game:
         return self.prompt_user()
 
     def is_done(self):
-        return self.table.is_full() or self.table.threeinarow()
+        return self.table.is_full() or self.done
