@@ -1,4 +1,4 @@
-from random import randint
+from random import randrange
 
 
 class Node:
@@ -44,7 +44,6 @@ class PlayerAI:
     def __init__(self):
         self.player = 2
         self.node = gen_tree()
-        self.difficulty = 0.4
 
     def find_node(self, state):
         for ch in self.node.children:
@@ -63,12 +62,11 @@ class PlayerAI:
             if threeinarow(child.state, self.player):
                 return child
 
-        if randint(0, 101) / 100 < self.difficulty:
-            for i, child in enumerate(self.node.children):
-                hypo = child.state.copy()
-                hypo[child.action] = 1
-                if threeinarow(hypo, 1):
-                    return child
+        for i, child in enumerate(self.node.children):
+            hypo = child.state.copy()
+            hypo[child.action] = 1
+            if threeinarow(hypo, 1):
+                return child
 
         def win_count(child):
             if threeinarow(child.state, self.player):
@@ -83,6 +81,8 @@ class PlayerAI:
 
         counts = [win_count(ch) for ch in self.node.children]
         best = max(counts)
-        for i, c in enumerate(counts):
-            if c == best:
-                return self.node.children[i]
+        indices = []
+        for i, v in enumerate(counts):
+            if v == best:
+                indices.append(i)
+        return self.node.children[indices[randrange(len(indices))]]
