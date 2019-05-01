@@ -1,37 +1,43 @@
+from ai import PlayerAI
 
 
 class Table:
 
     def __init__(self):
-        self.data = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        self.data = [0 for _ in range(9)]
 
     def set(self, x, y, v):
         if x < 0 or x > 2 or y < 0 or y > 2:
             raise IndexError("Position out of bounds.")
-        if not self.data[y][x] == 0:
+        if not self.data[y * 3 + x] == 0:
             raise IndexError("Position already in use.")
-        self.data[y][x] = v
+        self.data[y * 3 + x] = v
+
+    def get(self, x, y):
+        return self.data[y * 3 + x]
 
     def is_full(self):
-        for r in self.data:
-            for i in r:
-                if i == 0:
-                    return False
+        for i in self.data:
+            if i == 0:
+                return False
         return True
 
     def threeinarow(self, player):
-        t = self.data
-        return ((t[0][0] == t[0][1] == t[0][2] == player) or
-                (t[1][0] == t[1][1] == t[1][2] == player) or
-                (t[2][0] == t[2][1] == t[2][2] == player) or
-                (t[0][0] == t[1][0] == t[2][0] == player) or
-                (t[0][1] == t[1][1] == t[2][1] == player) or
-                (t[0][2] == t[1][2] == t[2][2] == player) or
-                (t[0][0] == t[1][1] == t[2][2] == player) or
-                (t[2][0] == t[1][1] == t[0][2] == player))
+        return ((self.get(0, 0) == self.get(0, 1) == self.get(0, 2) == player) or
+                (self.get(1, 0) == self.get(1, 1) == self.get(1, 2) == player) or
+                (self.get(2, 0) == self.get(2, 1) == self.get(2, 2) == player) or
+                (self.get(0, 0) == self.get(1, 0) == self.get(2, 0) == player) or
+                (self.get(0, 1) == self.get(1, 1) == self.get(2, 1) == player) or
+                (self.get(0, 2) == self.get(1, 2) == self.get(2, 2) == player) or
+                (self.get(0, 0) == self.get(1, 1) == self.get(2, 2) == player) or
+                (self.get(2, 0) == self.get(1, 1) == self.get(0, 2) == player))
 
     def __str__(self):
-        return "\n".join([" ".join([str(v) for v in r]) for r in self.data])
+        value = ""
+        value = value + " ".join(str(i) for i in self.data[0:3]) + "\n"
+        value = value + " ".join(str(i) for i in self.data[3:6]) + "\n"
+        value = value + " ".join(str(i) for i in self.data[6:9])
+        return value
 
 
 class Game:
@@ -41,6 +47,7 @@ class Game:
         self.player = 1
         self.done = False
         self.winner = 0
+        self.playerai = PlayerAI()
 
     def start(self):
         while not self.is_done():
@@ -83,7 +90,7 @@ class Game:
         return x, y
 
     def prompt_ai(self):
-        return self.prompt_user()
+        return self.playerai.move(self.table.data)
 
     def is_done(self):
         return self.table.is_full() or self.done
